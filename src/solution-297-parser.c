@@ -56,7 +56,7 @@ typedef struct String {
   char *data;
 } String;
 
-#define INITIAL_STRING_CAP 18945186
+#define INITIAL_STRING_CAP 64
 #define STRING_GROWTH_FACTOR 2
 
 void initString(String *str) {
@@ -209,7 +209,8 @@ typedef struct Array {
   ArrayElement *data;
 } Array;
 
-#define ARRAY_INITIAL_CAP 3789037;
+#define OS_PAGE_SIZE (1024 * 16)
+#define ARRAY_INITIAL_CAP (64 / sizeof(ArrayElement));
 #define ARRAY_GROWTH_FACTOR 2;
 
 void initArray(Array *array) {
@@ -348,20 +349,16 @@ char *serialize(struct TreeNode *root) {
   while (stack.len > 0) {
     node = pop(&stack);
 
+    if (!node) {
+      appendChar(&buffer, '.');
+      continue;
+    }
+
     appendChar(&buffer, '(');
     appendNumber(&buffer, node->val);
 
-    if (node->right) {
-      addToArray(&stack, node->right);
-    } else {
-      appendChar(&buffer, '.');
-    }
-
-    if (node->left) {
-      addToArray(&stack, node->left);
-    } else {
-      appendChar(&buffer, '.');
-    }
+    addToArray(&stack, node->right);
+    addToArray(&stack, node->left);
   }
 
   return realloc(buffer.data, buffer.len + 1);

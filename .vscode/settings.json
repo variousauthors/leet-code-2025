@@ -12,6 +12,7 @@
     "json_tokenizer.h": "c",
     "haversine_formula.h": "c",
     "os_metrics.h": "c",
-    "repetition_tester.h": "c"
+    "repetition_tester.h": "c",
+    "tree-node.h": "c"
   }
 }

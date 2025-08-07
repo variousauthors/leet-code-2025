@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#define OS_PAGE_SIZE (1024 * 16)
+
 FILE *verboseChannel;
 FILE *perfChannel;
 

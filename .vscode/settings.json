@@ -1,0 +1,17 @@
+{
+  "files.associations": {
+    "cstddef": "c",
+    "global.h": "c",
+    "hardware.h": "c",
+    "optable.h": "c",
+    "stdio.h": "c",
+    "decode.h": "c",
+    "execute.h": "c",
+    "json_parser.h": "c",
+    "json.h": "c",
+    "json_tokenizer.h": "c",
+    "haversine_formula.h": "c",
+    "os_metrics.h": "c",
+    "repetition_tester.h": "c"
+  }
+}

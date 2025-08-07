@@ -57,7 +57,7 @@ int main() {
   char *s1 = serialize(root1);
   fprintf(stderr, "s1 len: %ld\n", strlen(s1));
 
-  root1 = deserialize(s1);
+  // root1 = deserialize(s1);
 
   endAndPrintProfiler();
 

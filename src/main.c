@@ -2,6 +2,8 @@
 #include "global.h"
 #include "os_metrics.c"
 #include "os_metrics.h"
+#include "repetition_tester.c"
+#include "repetition_tester.h"
 #include "solution-297-parser.c"
 #include "solution-297-parser.h"
 #include "tree-node.h"
@@ -16,25 +18,62 @@ unsigned long countNodes(TreeNode *node) {
 }
 
 #define null (-1e6)
-#define INPUT_SIZE (5234567)
+#define INPUT_SIZE (3789038)
 
-int main() {
+int *getBigInputs(int *size) {
+  *size = INPUT_SIZE;
   int *inputs = malloc(INPUT_SIZE * sizeof(int));
 
   for (int i = 0; i < INPUT_SIZE; i++) {
     inputs[i] = 99;
   }
 
+  return inputs;
+}
+
+int *getSmallInputs(int *size) {
+  *size = 13;
+  int *inputs = malloc(13 * sizeof(int));
+
+  inputs[0] = 1;
+  inputs[1] = 2;
+  inputs[2] = 3;
+  inputs[3] = null;
+  inputs[4] = null;
+  inputs[5] = 4;
+  inputs[6] = 5;
+  inputs[7] = null;
+  inputs[8] = null;
+  inputs[9] = null;
+  inputs[10] = null;
+  inputs[11] = 6;
+  inputs[12] = 7;
+
+  return inputs;
+}
+
+TreeNode *root1;
+
+void serializeIterative() { serialize(root1); }
+void serializeRecursive() { serializeOld(root1); }
+
+void NO_SETUP() {}
+void NO_TEARDOWN() {}
+
+int main() {
+  int inputSize;
+  int *inputs = getBigInputs(&inputSize);
+
   perf = 1;
   perfChannel = stderr;
   verboseChannel = stderr;
 
-  TreeNode *tree1 = calloc(INPUT_SIZE, sizeof(TreeNode));
+  TreeNode *tree1 = calloc(inputSize, sizeof(TreeNode));
 
-  for (int i = 0; i < INPUT_SIZE; i++) {
+  for (int i = 0; i < inputSize; i++) {
     tree1[i].val = inputs[i];
 
-    if ((i * 2 + 2) < INPUT_SIZE) {
+    if ((i * 2 + 2) < inputSize) {
       if (inputs[i * 2 + 1] != null) {
         tree1[i].left = &tree1[i * 2 + 1];
       }
@@ -48,22 +87,27 @@ int main() {
     }
   }
 
-  TreeNode *root1 = &tree1[0];
+  root1 = &tree1[0];
   unsigned long nodes = countNodes(root1);
-  // fprintf(stderr, "len: %ld, bytes: %ld\n", nodes, nodes * sizeof(TreeNode));
+  fprintf(verboseChannel, "len: %ld, bytes: %ld\n", nodes,
+          nodes * sizeof(TreeNode));
 
-  beginProfiler();
+  SubectUnderTestRepetitionTester *serializeRecursiveTest =
+      initSubectUnderTestRepetitionTester("serialize - recursive",
+                                          serializeRecursive, NO_SETUP,
+                                          NO_TEARDOWN, 90936888, 1);
 
-  char *s1 = serialize(root1);
-  // fprintf(stderr, "s1 len: %ld\n", strlen(s1));
+  SubectUnderTestRepetitionTester *serializeIterativeTest =
+      initSubectUnderTestRepetitionTester("serialize - iterative",
+                                          serializeIterative, NO_SETUP,
+                                          NO_TEARDOWN, 90936888, 1);
 
-  root1 = deserialize(s1);
+  subjects[0] = serializeRecursiveTest;
+  subjects[1] = serializeIterativeTest;
 
-  endAndPrintProfiler();
+  runRepetitionTester();
 
-  char *s2 = serialize(root1);
-
-  fprintf(stderr, "%d\n", strcmp(s1, s2) == 0);
+  printResultsRepetitiontester();
 
   return 0;
 }

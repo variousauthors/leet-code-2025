@@ -56,7 +56,7 @@ typedef struct String {
   char *data;
 } String;
 
-#define INITIAL_STRING_CAP 80
+#define INITIAL_STRING_CAP 18945186
 #define STRING_GROWTH_FACTOR 2
 
 void initString(String *str) {
@@ -209,7 +209,7 @@ typedef struct Array {
   ArrayElement *data;
 } Array;
 
-#define ARRAY_INITIAL_CAP 1;
+#define ARRAY_INITIAL_CAP 3789037;
 #define ARRAY_GROWTH_FACTOR 2;
 
 void initArray(Array *array) {
@@ -218,11 +218,16 @@ void initArray(Array *array) {
   array->data = malloc(sizeof(ArrayElement) * array->cap);
 }
 
+void addToArrayNoChecks(Array *array, ArrayElement el) {
+  array->data[array->len] = el;
+  array->len++;
+}
+
 void addToArray(Array *array, ArrayElement el) {
   if (array->len + 1 > array->cap) {
     // grow array
     array->cap <<= ARRAY_GROWTH_FACTOR;
-    array->data = realloc(array, sizeof(ArrayElement) * array->cap);
+    array->data = realloc(array->data, sizeof(ArrayElement) * array->cap);
   }
 
   array->data[array->len] = el;
@@ -234,7 +239,7 @@ ArrayElement pop(Array *stack) {
     return NULL;
   }
 
-  ArrayElement result = stack->data[stack->len];
+  ArrayElement result = stack->data[stack->len - 1];
 
   stack->len--;
 
@@ -315,32 +320,49 @@ TreeNode *treeNode(Tokenizer *tok) {
 }
 
 /** Encodes a tree to a single string. */
-char *serialize(struct TreeNode *root) {
-  TimeBandwidth(127457256);
+char *serializeOld(struct TreeNode *root) {
   String buffer;
   initString(&buffer);
 
-  /*
+  toString(&buffer, root);
+
+  return realloc(buffer.data, buffer.len + 1);
+}
+
+/** Encodes a tree to a single string. */
+char *serialize(struct TreeNode *root) {
+  String buffer;
+  initString(&buffer);
+
   Array stack;
   initArray(&stack);
 
   addToArray(&stack, root);
   TreeNode *node;
 
+  // 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C
+  // 1, 2, 3, n, n, 4, 5, n, n, n, n, 6, 7
+  // 3
+  // (1(2
+
   while (stack.len > 0) {
     node = pop(&stack);
 
-    append(&buffer, "(");
+    appendChar(&buffer, '(');
     appendNumber(&buffer, node->val);
 
-    toString(&buffer, node->left);
-    toString(&buffer, node->right);
+    if (node->right) {
+      addToArray(&stack, node->right);
+    } else {
+      appendChar(&buffer, '.');
+    }
 
-    append(&buffer, ")");
+    if (node->left) {
+      addToArray(&stack, node->left);
+    } else {
+      appendChar(&buffer, '.');
+    }
   }
-  */
-
-  toString(&buffer, root);
 
   return realloc(buffer.data, buffer.len + 1);
 }

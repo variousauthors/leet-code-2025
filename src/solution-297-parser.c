@@ -118,8 +118,6 @@ void toString(String *buffer, TreeNode *node) {
 
   toString(buffer, node->left);
   toString(buffer, node->right);
-
-  append(buffer, ")");
 }
 
 int toDigit(char h) {
@@ -231,6 +229,18 @@ void addToArray(Array *array, ArrayElement el) {
   array->len++;
 }
 
+ArrayElement pop(Array *stack) {
+  if (stack->len == 0) {
+    return NULL;
+  }
+
+  ArrayElement result = stack->data[stack->len];
+
+  stack->len--;
+
+  return result;
+}
+
 TOKEN_TYPE parseToken(Tokenizer *tokenizer) {
   char c = getNext(tokenizer);
 
@@ -301,7 +311,6 @@ TreeNode *treeNode(Tokenizer *tok) {
   nodes[index].left = treeNode(tok);
   nodes[index].right = treeNode(tok);
 
-  consume(tok, T_RIGHT_PAREN);
   return &nodes[index];
 }
 
@@ -310,6 +319,26 @@ char *serialize(struct TreeNode *root) {
   TimeBandwidth(127457256);
   String buffer;
   initString(&buffer);
+
+  /*
+  Array stack;
+  initArray(&stack);
+
+  addToArray(&stack, root);
+  TreeNode *node;
+
+  while (stack.len > 0) {
+    node = pop(&stack);
+
+    append(&buffer, "(");
+    appendNumber(&buffer, node->val);
+
+    toString(&buffer, node->left);
+    toString(&buffer, node->right);
+
+    append(&buffer, ")");
+  }
+  */
 
   toString(&buffer, root);
 

@@ -50,18 +50,20 @@ int main() {
 
   TreeNode *root1 = &tree1[0];
   unsigned long nodes = countNodes(root1);
-  fprintf(stderr, "len: %ld, bytes: %ld\n", nodes, nodes * sizeof(TreeNode));
+  // fprintf(stderr, "len: %ld, bytes: %ld\n", nodes, nodes * sizeof(TreeNode));
 
   beginProfiler();
 
   char *s1 = serialize(root1);
-  fprintf(stderr, "s1 len: %ld\n", strlen(s1));
+  // fprintf(stderr, "s1 len: %ld\n", strlen(s1));
 
-  // root1 = deserialize(s1);
+  root1 = deserialize(s1);
 
   endAndPrintProfiler();
 
-  // char *s2 = serialize(root1);
+  char *s2 = serialize(root1);
+
+  fprintf(stderr, "%d\n", strcmp(s1, s2) == 0);
 
   return 0;
 }

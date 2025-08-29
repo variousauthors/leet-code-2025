@@ -168,7 +168,7 @@ int writeToRingBuffer(RingBuffer *buffer, Element node) {
 }
 
 /** Encodes a tree to a single string. */
-char *serialize(struct TreeNode *root) {
+char *serializeIterative(struct TreeNode *root) {
   RingBuffer ringBuffer;
   initRingBuffer(&ringBuffer, 80000);
 

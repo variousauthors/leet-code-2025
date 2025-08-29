@@ -4,18 +4,13 @@
 #include "os_metrics.h"
 #include "repetition_tester.c"
 #include "repetition_tester.h"
+#include "solution-297-parser-prealloc.c"
+#include "solution-297-parser-prealloc.h"
 #include "solution-297-parser.c"
 #include "solution-297-parser.h"
+#include "tree-node.c"
 #include "tree-node.h"
 #include <stdio.h>
-
-unsigned long countNodes(TreeNode *node) {
-  if (!node) {
-    return 0;
-  }
-
-  return 1 + countNodes(node->left) + countNodes(node->right);
-}
 
 #define null (-1e6)
 #define INPUT_SIZE (3789038)
@@ -91,9 +86,21 @@ TreeNode *getSmallInputs() {
 }
 
 TreeNode *root1;
+TreeNode *result;
+char *s;
 
-void serializeIterative() { serialize(root1); }
-void serializeRecursive() { serializeOld(root1); }
+void _serializeIterative() { s = serializeIterative(root1); }
+void _serializeRecursive() { s = serializeRecursive(root1); }
+void _serializePreAlloc() { s = serializePreAlloc(root1); }
+
+void serialAccessPattern() {}
+
+void pointerFollowingAccessPattern() {}
+
+/* go get the node at i * 2 + 1 instead of following the left pointer */
+void arithmeticAccessPattern() {}
+
+void teardown() { free(s); }
 
 void NO_SETUP() {}
 void NO_TEARDOWN() {}
@@ -103,12 +110,10 @@ int main() {
   perfChannel = stderr;
   verboseChannel = stderr;
 
-  perf = 1;
-
   if (!perf) {
     root1 = getSmallInputs();
-    char *s1 = serializeOld(root1);
-    char *s2 = serialize(root1);
+    char *s1 = serializeRecursive(root1);
+    char *s2 = serializeIterative(root1);
 
     fprintf(stderr, "s1 %s\n", s1);
     fprintf(stderr, "s2 %s\n", s2);
@@ -116,8 +121,8 @@ int main() {
     TreeNode *n1 = deserialize(s1);
     TreeNode *n2 = deserialize(s2);
 
-    char *s3 = serializeOld(root1);
-    char *s4 = serialize(root1);
+    char *s3 = serializeRecursive(root1);
+    char *s4 = serializeIterative(root1);
 
     fprintf(stderr, "s3 %s\n", s3);
     fprintf(stderr, "s4 %s\n", s4);
@@ -131,16 +136,22 @@ int main() {
 
     SubectUnderTestRepetitionTester *serializeRecursiveTest =
         initSubectUnderTestRepetitionTester("serialize - recursive",
-                                            serializeRecursive, NO_SETUP,
-                                            NO_TEARDOWN, 90936888, 2);
+                                            _serializeRecursive, NO_SETUP,
+                                            teardown, 90936888, 2);
 
     SubectUnderTestRepetitionTester *serializeIterativeTest =
         initSubectUnderTestRepetitionTester("serialize - iterative",
-                                            serializeIterative, NO_SETUP,
-                                            NO_TEARDOWN, 90936888, 2);
+                                            _serializeIterative, NO_SETUP,
+                                            teardown, 90936888, 2);
+
+    SubectUnderTestRepetitionTester *serializePreAllocTest =
+        initSubectUnderTestRepetitionTester("serialize - pre alloc",
+                                            _serializePreAlloc, NO_SETUP,
+                                            teardown, 90936888, 2);
 
     subjects[0] = serializeRecursiveTest;
     subjects[1] = serializeIterativeTest;
+    subjects[2] = serializePreAllocTest;
 
     runRepetitionTester();
 

@@ -113,7 +113,6 @@ void toString(String *buffer, TreeNode *node) {
     return;
   }
 
-  append(buffer, "(");
   appendNumber(buffer, node->val);
 
   toString(buffer, node->left);
@@ -174,6 +173,7 @@ typedef enum TOKEN_TYPE {
   T_RIGHT_PAREN,
   T_NUMBER,
   T_DOT,
+  T_START,
 } TOKEN_TYPE;
 
 typedef struct Tokenizer {
@@ -209,7 +209,6 @@ typedef struct Array {
   ArrayElement *data;
 } Array;
 
-#define OS_PAGE_SIZE (1024 * 16)
 #define ARRAY_INITIAL_CAP (64 / sizeof(ArrayElement));
 #define ARRAY_GROWTH_FACTOR 2;
 
@@ -267,13 +266,13 @@ TOKEN_TYPE parseToken(Tokenizer *tokenizer) {
   case 'A' ... 'F': {
     int16_t raw = toDigit(c);
 
-    while (isalnum(c = getNext(tokenizer))) {
-      raw <<= 4;
-      raw += toDigit(c);
-    }
+    c = getNext(tokenizer);
+    raw <<= 4;
+    raw += toDigit(c);
 
-    // the last char we got was not digit
-    tokenizer->next--;
+    c = getNext(tokenizer);
+    raw <<= 4;
+    raw += toDigit(c);
 
     // sign exted
     if (raw & 0x800) {
@@ -303,17 +302,19 @@ TreeNode *nodes;
 int freeNode = 0;
 
 TreeNode *treeNode(Tokenizer *tok) {
+  if (tok->token == T_NONE) {
+    return NULL;
+  }
+
   if (tok->token == T_DOT) {
     consume(tok, T_DOT);
     return NULL;
   }
 
-  consume(tok, T_LEFT_PAREN);
-
   int index = freeNode++;
 
-  consume(tok, T_NUMBER);
   nodes[index].val = tok->value;
+  consume(tok, T_NUMBER);
   nodes[index].left = treeNode(tok);
   nodes[index].right = treeNode(tok);
 
@@ -321,7 +322,7 @@ TreeNode *treeNode(Tokenizer *tok) {
 }
 
 /** Encodes a tree to a single string. */
-char *serializeOld(struct TreeNode *root) {
+char *serializeRecursive(struct TreeNode *root) {
   String buffer;
   initString(&buffer);
 
@@ -331,7 +332,7 @@ char *serializeOld(struct TreeNode *root) {
 }
 
 /** Encodes a tree to a single string. */
-char *serialize(struct TreeNode *root) {
+char *serializeIterative(struct TreeNode *root) {
   String buffer;
   initString(&buffer);
 
@@ -340,6 +341,8 @@ char *serialize(struct TreeNode *root) {
 
   addToArray(&stack, root);
   TreeNode *node;
+
+  int count = countNodes(root);
 
   // 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C
   // 1, 2, 3, n, n, 4, 5, n, n, n, n, 6, 7
@@ -354,7 +357,6 @@ char *serialize(struct TreeNode *root) {
       continue;
     }
 
-    appendChar(&buffer, '(');
     appendNumber(&buffer, node->val);
 
     addToArray(&stack, node->right);
@@ -368,12 +370,13 @@ char *serialize(struct TreeNode *root) {
 
 /** Decodes your encoded data to tree. */
 struct TreeNode *deserialize(char *data) {
-  TimeBandwidth(31864315);
   nodes = calloc(MAX_NODES, sizeof(TreeNode));
 
   TreeNode *result;
   Tokenizer tokenizer;
   initTokenizer(&tokenizer, data);
 
-  return treeNode(&tokenizer);
+  result = treeNode(&tokenizer);
+
+  return result;
 }

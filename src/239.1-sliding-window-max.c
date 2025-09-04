@@ -13,7 +13,7 @@ typedef struct DQ {
 
   int *data;
 } DQ;
-
+uint32_t bob;
 // allocates storage for size elements
 void initDQ(DQ *dq, int size) {
   dq->data = calloc(sizeof(int), size + 2);
